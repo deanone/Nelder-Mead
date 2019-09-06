@@ -35,4 +35,9 @@ public class Simplex
 	{
 		testPoints.set(i, p);
 	}
+	
+	public ArrayList<Point> getPoints()
+	{
+		return testPoints;
+	}
 }

@@ -1,7 +1,9 @@
 import java.util.TreeMap;
+import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
+import javax.swing.JFrame;
 
 public class NMmethod
 {
@@ -201,11 +203,19 @@ public class NMmethod
 	
 	public static void main(String[] args)
 	{
+		// Visualize
+		JFrame frame = new JFrame("Running...");
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		frame.setSize(500, 500);
+		frame.setLocationRelativeTo(null);
+		frame.setVisible(true);
+		
+		int delayTime = 2;
 		double threshold = 10.0;
 		int n = 2;
 		int numOfPoints = n + 1;
 		double rangeMin = 1.0;
-		double rangeMax = 10.0;
+		double rangeMax = 5.0;
 		Simplex sim = new Simplex(n, rangeMin, rangeMax);
 		
 		int iterationIndex = 1;
@@ -270,6 +280,19 @@ public class NMmethod
 					shrink(sim,  sim.getPoint(numOfPoints - 1), numOfPoints - 1);
 				}
 			}
+			
+			PointDrawer pointsDrawer = new PointDrawer(sim.getPoints());
+			frame.add(pointsDrawer);
+			frame.repaint();
+			frame.revalidate();
+			try
+			{
+				TimeUnit.SECONDS.sleep(delayTime);
+			} catch (InterruptedException e)
+			{
+				e.printStackTrace();
+			}
+			
 		}
 		System.out.printf("The algorithm converged in %d iterations with minimum simplex stardard deviation %.2f and minimum value of function %.2f.", iterationIndex - 1, simplexStd, minFval);
 	}
