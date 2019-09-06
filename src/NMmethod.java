@@ -116,12 +116,12 @@ public class NMmethod
 		int numOfPoints = sim.getNumOfPoints();
 		int n = sim.getN();
 		Point centroid  = new Point();
-		for (int i = 0; i < n ; i++)
+		for (int i = 0; i < n; i++)
 		{
 			double val = 0.0;
 			for (int j = 0; j < numOfPoints; j++)
 			{
-				val += sim.getPoint(i).getValue(j);
+				val += sim.getPoint(j).getValue(i);
 			}
 			val /= numOfPoints;
 			centroid.addVal(val);
@@ -172,10 +172,8 @@ public class NMmethod
 		}
 	}
 	
-	public static boolean isTerminated(Simplex sim, double threshold)
+	public static double computeSimplexStd(Simplex sim)
 	{
-		boolean terminated = false;
-		
 		// Calculate f values for the points of the Simplex
 		ArrayList<Double> fvals = new ArrayList<Double>();
 		int numOfPoints = sim.getNumOfPoints();
@@ -187,7 +185,14 @@ public class NMmethod
 		
 		// Calculate standard deviation of the f values
 		double s = std(fvals);
-		if (s < threshold)
+		return s;
+	}
+	
+	public static boolean isTerminated(Simplex sim, double threshold)
+	{
+		boolean terminated = false;
+		double simplexStd = computeSimplexStd(sim);
+		if (simplexStd < threshold)
 		{
 			terminated = true;
 		}
@@ -203,10 +208,21 @@ public class NMmethod
 		double rangeMax = 10.0;
 		Simplex sim = new Simplex(n, rangeMin, rangeMax);
 		
+		int iterationIndex = 1;
+		double simplexStd = 0.0;
+		double minFval = 0.0;
 		boolean terminated = isTerminated(sim, threshold);
 		while (!terminated)
 		{
 			Order(sim);
+			
+			simplexStd = computeSimplexStd(sim);
+			minFval = Himmelblau(sim.getPoint(numOfPoints - 1));
+			System.out.printf("Iteration: %d", iterationIndex);
+			System.out.printf(", Simplex standard deviation: %.2f ", simplexStd);
+			System.out.printf(", Minimum value of function: %.2f ", minFval);
+			System.out.println();
+			iterationIndex += 1;
 			
 			// Calculate centroid
 			Point centroid = calcCentroid(sim);
@@ -249,8 +265,12 @@ public class NMmethod
 					sim.setPoint(numOfPoints - 1, contractedPoint);
 					terminated = isTerminated(sim, threshold);
 				}
+				else
+				{
+					shrink(sim,  sim.getPoint(numOfPoints - 1), numOfPoints - 1);
+				}
 			}
-			shrink(sim,  sim.getPoint(numOfPoints - 1), numOfPoints - 1);
-		}		
+		}
+		System.out.printf("The algorithm converged in %d iterations with minimum simplex stardard deviation %.2f and minimum value of function %.2f.", iterationIndex - 1, simplexStd, minFval);
 	}
 }
