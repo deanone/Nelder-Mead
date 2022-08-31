@@ -1,43 +1,35 @@
 import java.util.ArrayList;
 import java.util.Random;
 
-public class Point
-{
+public class Point {
 	public ArrayList<Double> vals;
 
-	public Point()
-	{
+	public Point() {
 		vals = new ArrayList<Double>();
 	}
 	
-	public Point(int n, double rangeMin, double rangeMax)
-	{
+	public Point(int n, double rangeMin, double rangeMax) {
 		vals = new ArrayList<Double>();
-		for (int i = 0; i < n; i++)
-		{
+		for (int i = 0; i < n; i++) {
 			Random r = new Random();
 			double randomValue = rangeMin + (rangeMax - rangeMin) * r.nextDouble();
 			vals.add(randomValue);
 		}
 	}
 	
-	public void addVal(double val)
-	{
+	public void addVal(double val) {
 		vals.add(val);
 	}
 	
-	public int getNumOfValues()
-	{
+	public int getNumOfValues() {
 		return vals.size();
 	}
 	
-	public ArrayList<Double> getValues()
-	{
+	public ArrayList<Double> getValues() {
 		return vals;
 	}
 	
-	public double getValue(int i)
-	{
+	public double getValue(int i) {
 		return vals.get(i);
 	}
 }
