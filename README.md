@@ -1,4 +1,4 @@
-# Nelder-Mead method in Java
+# Nelder-Mead in Java
 
 This is an implementation of the [Nelder-Mead method](https://en.wikipedia.org/wiki/Nelder%E2%80%93Mead_method) in (native) Java.
 
