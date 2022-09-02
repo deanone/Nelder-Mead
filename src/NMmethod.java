@@ -237,12 +237,12 @@ public class NMmethod {
 		
 		// create a new simplex
 		int numOfTestPoints = 3;
-		double rangeMin = 1.0;
-		double rangeMax = 5.0;
+		double rangeMin = -1.0;
+		double rangeMax = 1.0;
 		Simplex sim = new Simplex(numOfTestPoints, rangeMin, rangeMax);
 		
 		int delayTime = 1;
-		double tolerance = 10.0;
+		double tolerance = 1.0;
 		int iterationIndex = 1;
 		double simplexStd = 0.0;
 		double minFval = 0.0;
