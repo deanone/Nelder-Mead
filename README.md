@@ -12,3 +12,4 @@ The implementation contains (for now):
 The current implementation works (for now) for the following functions:
 
 1. [Himmelblau's function](https://en.wikipedia.org/wiki/Himmelblau%27s_function)
+2. Booth function
