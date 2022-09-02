@@ -3,12 +3,20 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Random;
-
 import javax.swing.JPanel;
 
+/**
+ * @author A. Salamanis
+ * @version 0.1
+ * @since 2019-09-05
+ *
+ * PointDrawer class: The class containing the facilities for drawing a point on 2D panel.
+ */
 public class PointDrawer extends JPanel {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	ArrayList<Point> points;
 	
 	public PointDrawer(ArrayList<Point> points) {

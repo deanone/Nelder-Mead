@@ -1,9 +1,6 @@
 import java.util.TreeMap;	// implementation of Map and SortedMap interfaces that maintains ascending order
-
-
 import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
-import java.util.Map;
 import java.util.Map.Entry;
 import javax.swing.JFrame;
 
@@ -46,8 +43,6 @@ public class NMmethod {
 		int i = 0;
 		for (Entry<Double, Point> entry : testPointsFuncValues.entrySet()) {
 			Point testPoint = entry.getValue();
-			Double testPointFuncValue = entry.getKey();
-			System.out.println(i + "," + testPointFuncValue);
 			sim.setPoint(i, testPoint);
 			i++;
 		}
@@ -196,26 +191,6 @@ public class NMmethod {
 		}
 	}
 	
-	public static double mean(ArrayList<Double> vals) {
-		double m = 0.0;
-		for (int i = 0; i < vals.size(); i++) {
-			m += vals.get(i);
-		}
-		m /= vals.size();
-		return m;
-	}
-	
-	public static double std(ArrayList<Double> vals) {
-		double s = 0.0;
-		double m = mean(vals);
-		for (int i = 0; i < vals.size(); i++) {
-			s += Math.pow(vals.get(i) - m, 2);
-		}
-		s /= (double)(vals.size() - 1);
-		s = Math.sqrt(s);
-		return s;
-	}
-	
 	/**
 	 * Computes the standard deviation of the function values at the points of the current simplex.
 	 * 
@@ -232,7 +207,7 @@ public class NMmethod {
 		}
 		
 		// Compute the standard deviation of the f values
-		double s = std(fvals);
+		double s = StatisticsCalculator.std(fvals);
 		return s;
 	}
 	
@@ -253,8 +228,8 @@ public class NMmethod {
 	}
 	
 	public static void main(String[] args) {
-		// Visualize
-		JFrame frame = new JFrame("Running...");
+		// visualization
+		JFrame frame = new JFrame("Executing the Nelder-Mead algorithm...");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(500, 500);
 		frame.setLocationRelativeTo(null);
@@ -341,6 +316,7 @@ public class NMmethod {
 				}
 			}
 			
+			// visualization
 			PointDrawer pointsDrawer = new PointDrawer(sim.getPoints());
 			frame.add(pointsDrawer);
 			frame.repaint();
