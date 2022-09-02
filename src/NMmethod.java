@@ -7,6 +7,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import javax.swing.JFrame;
 
+/**
+ * @author A. Salamanis
+ * @version 0.1
+ * @since 2019-09-05
+ *
+ * NM class: The class representing the Nelder-Mead algorithm.
+ */
 public class NMmethod {
 	public static double Himmelblau(double x, double y) {
 		return Math.pow(Math.pow(x, 2) + y - 11, 2) + Math.pow(x + Math.pow(y, 2) - 7, 2);
@@ -137,12 +144,56 @@ public class NMmethod {
 	 * 
 	 * @param centroid the centroid of the simplex
 	 * @param lastPoint the last point of the simplex
-	 * @return
+	 * @return the reflected point
 	 */
 	public static Point reflection(Point centroid, Point lastPoint) {
 		double alpha = 1.0;
 		Point reflectedPoint = add(centroid, multiplyPointByConstant(subtract(centroid, lastPoint), alpha));
 		return reflectedPoint;
+	}
+	
+	/**
+	 * Computes the expanded point.
+	 * 
+	 * @param centroid the centroid of the simplex
+	 * @param reflectedPoint the reflected point
+	 * @return the expanded point
+	 */
+	public static Point expansion(Point centroid, Point reflectedPoint) {
+		double gamma = 2.0;
+		Point expandedPoint = add(centroid, multiplyPointByConstant(subtract(reflectedPoint, centroid), gamma));    
+		return expandedPoint;
+	}
+	
+	/**
+	 * Computes the contracted point.
+	 * 
+	 * @param centroid the centroid of the simplex
+	 * @param point either the reflected point (for contacted point on the outside) or the last point of the simplex (for the contracted point on the inside)
+	 * @return the contracted point
+	 */
+	public static Point contraction(Point centroid, Point point) {
+		double rho = 0.5;
+		Point contractedPoint =  add(centroid, multiplyPointByConstant(subtract(point, centroid), rho));
+		return contractedPoint;
+	}
+	
+	/**
+	 * Replace all points of the simplex, but the best.
+	 * 
+	 * @param sim the simplex
+	 * @param bestPoint the best point
+	 * @param bestPointIndex the index of the best point
+	 */
+	public static void shrink(Simplex sim, Point bestPoint, int bestPointIndex) {
+		double sigma = 0.5; 
+		int numOfTestPoints = sim.getNumOfTestPoints();
+		for (int testPointIndex = 0; testPointIndex < numOfTestPoints; testPointIndex++) {
+			if (testPointIndex != bestPointIndex) {
+				Point newPoint = add(bestPoint, multiplyPointByConstant(subtract(sim.getPoint(testPointIndex), bestPoint), sigma));
+				sim.setPoint(testPointIndex, newPoint);
+			}
+		}
 	}
 	
 	public static double mean(ArrayList<Double> vals) {
@@ -165,63 +216,37 @@ public class NMmethod {
 		return s;
 	}
 	
-
-	
-
-	
-
-	
-
-	
-
-	
-	public static Point expansion(Point centroid, Point reflectedPoint) {
-		double gamma = 2.0;
-		Point expandedPoint = subtract(reflectedPoint, centroid);
-		expandedPoint = multiplyConstantByPoint(gamma, expandedPoint);
-		expandedPoint = add(centroid, expandedPoint);
-		return expandedPoint;
-	}
-	
-	public static Point contraction(Point centroid, Point lastPoint) {
-		double rho = 0.5;
-		Point contractedPoint = subtract(lastPoint, centroid);
-		contractedPoint = multiplyConstantByPoint(rho, contractedPoint);
-		contractedPoint = add(centroid, contractedPoint);
-		return contractedPoint;
-	}
-	
-	public static void shrink(Simplex sim, Point bestPoint, int bestPointId) {
-		double sigma = 0.5; 
-		int numOfPoints = sim.getNumOfPoints();
-		for (int i = 0; i < numOfPoints; i++) {
-			if (i != bestPointId) {
-				Point newPoint = subtract(sim.getPoint(i), bestPoint);
-				newPoint = multiplyConstantByPoint(sigma, newPoint);
-				newPoint = add(newPoint, bestPoint);
-				sim.setPoint(i, newPoint);
-			}
-		}
-	}
-	
+	/**
+	 * Computes the standard deviation of the function values at the points of the current simplex.
+	 * 
+	 * @param sim the current simplex
+	 * @return the standard deviation of the function values at the points of the current simplex
+	 */
 	public static double computeSimplexStd(Simplex sim) {
 		// Compute f values for the points of the Simplex
 		ArrayList<Double> fvals = new ArrayList<Double>();
-		int numOfPoints = sim.getNumOfPoints();
-		for (int i = 0; i < numOfPoints; i++) {
-			double fval = Himmelblau(sim.getPoint(i));
+		int numOfTestPoints = sim.getNumOfTestPoints();
+		for (int testPointIndex = 0; testPointIndex < numOfTestPoints; testPointIndex++) {
+			double fval = Himmelblau(sim.getPoint(testPointIndex));
 			fvals.add(fval);
 		}
 		
-		// Compute standard deviation of the f values
+		// Compute the standard deviation of the f values
 		double s = std(fvals);
 		return s;
 	}
 	
-	public static boolean isTerminated(Simplex sim, double threshold){
+	/**
+	 * Evaluates the termination criteria of the method.
+	 * 
+	 * @param sim the simplex
+	 * @param tolerance the tolerance against which the standard deviation of the function values of current simplex is compared 
+	 * @return true if the evaluation criteria have been met, false otherwise
+	 */
+	public static boolean isTerminated(Simplex sim, double tolerance){
 		boolean terminated = false;
 		double simplexStd = computeSimplexStd(sim);
-		if (simplexStd < threshold) {
+		if (simplexStd < tolerance) {
 			terminated = true;
 		}
 		return terminated;		
@@ -242,15 +267,16 @@ public class NMmethod {
 		Simplex sim = new Simplex(numOfTestPoints, rangeMin, rangeMax);
 		
 		int delayTime = 1;
-		double threshold = 10.0;
+		double tolerance = 10.0;
 		int iterationIndex = 1;
 		double simplexStd = 0.0;
 		double minFval = 0.0;
-		boolean terminated = isTerminated(sim, threshold);
+		boolean terminated = isTerminated(sim, tolerance);
 		
 		// iteration
 		while (!terminated) {
-			Order(sim);
+			// the test points of the simplex according to the function values on them
+			order(sim);
 			
 			simplexStd = computeSimplexStd(sim);
 			minFval = Himmelblau(sim.getPoint(numOfTestPoints - 1));
@@ -260,43 +286,58 @@ public class NMmethod {
 			System.out.println();
 			iterationIndex += 1;
 			
-			// Calculate centroid
+			// Compute centroid
 			Point centroid = calcCentroid(sim);
 			
-			// Calculate reflected point
+			// Compute reflected point
 			Point reflectedPoint = reflection(centroid, sim.getPoint(numOfTestPoints - 1));
 			
 			// Check reflected point
 			double fBest = Himmelblau(sim.getPoint(0));
 			double fReflectedPoint = Himmelblau(reflectedPoint);
-			double fSecondWorst = Himmelblau(sim.getPoint(numOfPoints - 2));
-			
-			if (fReflectedPoint >= fBest && fReflectedPoint <= fSecondWorst) {
-				sim.setPoint(numOfPoints - 1, reflectedPoint);
-				terminated = isTerminated(sim, threshold);
+			double fSecondWorst = Himmelblau(sim.getPoint(numOfTestPoints - 2));
+			if ((fReflectedPoint >= fBest) && (fReflectedPoint < fSecondWorst)) {
+				sim.setPoint(numOfTestPoints - 1, reflectedPoint);
+				terminated = isTerminated(sim, tolerance);
 			}
 			else if (fReflectedPoint < fBest) {
 				Point expandedPoint = expansion(centroid, reflectedPoint);
 				double fExpandedPoint = Himmelblau(expandedPoint);
 				if (fExpandedPoint < fReflectedPoint) {
-					sim.setPoint(numOfPoints - 1, expandedPoint);
-					terminated = isTerminated(sim, threshold);
+					sim.setPoint(numOfTestPoints - 1, expandedPoint);
+					terminated = isTerminated(sim, tolerance);
 				}
 				else {
-					sim.setPoint(numOfPoints - 1, reflectedPoint);
-					terminated = isTerminated(sim, threshold);
+					sim.setPoint(numOfTestPoints - 1, reflectedPoint);
+					terminated = isTerminated(sim, tolerance);
 				}
 			}
 			else {
-				Point contractedPoint = contraction(centroid, sim.getPoint(numOfPoints - 1));
-				double fContractedPoint = Himmelblau(contractedPoint);
-				double fWorstPoint = Himmelblau(sim.getPoint(numOfPoints - 1));
-				if (fContractedPoint < fWorstPoint) {
-					sim.setPoint(numOfPoints - 1, contractedPoint);
-					terminated = isTerminated(sim, threshold);
+				
+				double fWorstPoint = Himmelblau(sim.getPoint(numOfTestPoints - 1));
+				if (fReflectedPoint < fWorstPoint) {
+					Point contractedPoint = contraction(centroid, reflectedPoint);
+					double fContractedPoint = Himmelblau(contractedPoint);
+					if (fContractedPoint < fReflectedPoint)
+					{
+						sim.setPoint(numOfTestPoints - 1, contractedPoint);
+						terminated = isTerminated(sim, tolerance);
+					}
+					else {
+						shrink(sim,  sim.getPoint(numOfTestPoints - 1), numOfTestPoints - 1);
+					}
 				}
 				else {
-					shrink(sim,  sim.getPoint(numOfPoints - 1), numOfPoints - 1);
+					Point contractedPoint = contraction(centroid, sim.getPoint(numOfTestPoints - 1));
+					double fContractedPoint = Himmelblau(contractedPoint);
+					if (fContractedPoint < fWorstPoint)
+					{
+						sim.setPoint(numOfTestPoints - 1, contractedPoint);
+						terminated = isTerminated(sim, tolerance);
+					}
+					else {
+						shrink(sim,  sim.getPoint(numOfTestPoints - 1), numOfTestPoints - 1);
+					}
 				}
 			}
 			
