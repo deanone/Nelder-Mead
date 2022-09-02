@@ -12,31 +12,38 @@ import javax.swing.JFrame;
  * NM class: The class representing the Nelder-Mead algorithm.
  */
 public class NMmethod {
-	public static double Himmelblau(double x, double y) {
-		return Math.pow(Math.pow(x, 2) + y - 11, 2) + Math.pow(x + Math.pow(y, 2) - 7, 2);
-	}
 	
-	public static double Himmelblau(Point p) {
-		int n = p.getNumOfValues();
-		if (n != 2) {
-			return -1.0;
+	/**
+	 * Wrapper method for choosing the function to optimize.
+	 * 
+	 * @param point the point on which the function is evaluated
+	 * @param functionName the name of the function
+	 * @return the value of the function on the input point 
+	 */
+	public static double functionToOptimize(Point point, String functionName) {
+		if (functionName.equals("Himmelblau")) {
+			return FunctionsForOptimization.Himmelblau(point);
+		}
+		else if (functionName.equals("Booth")) {
+			return FunctionsForOptimization.Booth(point);
 		}
 		else {
-			return Math.pow(Math.pow(p.getValue(0), 2) + p.getValue(1) - 11, 2) + Math.pow(p.getValue(0) + Math.pow(p.getValue(1), 2) - 7, 2);
+			return 0.0;
 		}
 	}
-
+	
 	/**
 	 * Order the test points of the simplex according to the values of the function to be optimized.
 	 * 
 	 * @param sim the simplex
+	 * @param functionName the name of the function to be optimized
 	 */
-	public static void order(Simplex sim) {
+	public static void order(Simplex sim, String functionName) {
 		TreeMap<Double, Point> testPointsFuncValues = new TreeMap<Double, Point>();
 		int numOfTestPoints = sim.getNumOfTestPoints();
 		for (int testPointIndex = 0; testPointIndex < numOfTestPoints; testPointIndex++) {
 			Point testPoint = sim.getPoint(testPointIndex);
-			Double testPointFuncValue = Himmelblau(testPoint);
+			Double testPointFuncValue = functionToOptimize(testPoint, functionName);
 			testPointsFuncValues.put(testPointFuncValue, testPoint);
 		}
 		
@@ -195,14 +202,15 @@ public class NMmethod {
 	 * Computes the standard deviation of the function values at the points of the current simplex.
 	 * 
 	 * @param sim the current simplex
+	 * @param the function to be optimized
 	 * @return the standard deviation of the function values at the points of the current simplex
 	 */
-	public static double computeSimplexStd(Simplex sim) {
+	public static double computeSimplexStd(Simplex sim, String functionName) {
 		// Compute f values for the points of the Simplex
 		ArrayList<Double> fvals = new ArrayList<Double>();
 		int numOfTestPoints = sim.getNumOfTestPoints();
 		for (int testPointIndex = 0; testPointIndex < numOfTestPoints; testPointIndex++) {
-			double fval = Himmelblau(sim.getPoint(testPointIndex));
+			double fval = functionToOptimize(sim.getPoint(testPointIndex), functionName);
 			fvals.add(fval);
 		}
 		
@@ -215,12 +223,13 @@ public class NMmethod {
 	 * Evaluates the termination criteria of the method.
 	 * 
 	 * @param sim the simplex
-	 * @param tolerance the tolerance against which the standard deviation of the function values of current simplex is compared 
+	 * @param tolerance the tolerance against which the standard deviation of the function values of current simplex is compared
+	 * @param the function to be optimized
 	 * @return true if the evaluation criteria have been met, false otherwise
 	 */
-	public static boolean isTerminated(Simplex sim, double tolerance){
+	public static boolean isTerminated(Simplex sim, double tolerance, String functionName){
 		boolean terminated = false;
-		double simplexStd = computeSimplexStd(sim);
+		double simplexStd = computeSimplexStd(sim, functionName);
 		if (simplexStd < tolerance) {
 			terminated = true;
 		}
@@ -228,7 +237,7 @@ public class NMmethod {
 	}
 	
 	public static void main(String[] args) {
-		// visualization
+		// visualization (TODO: Improve visualization)
 		JFrame frame = new JFrame("Executing the Nelder-Mead algorithm...");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setSize(500, 500);
@@ -236,25 +245,30 @@ public class NMmethod {
 		frame.setVisible(true);
 		
 		// create a new simplex
-		int numOfTestPoints = 3;
-		double rangeMin = -1.0;
-		double rangeMax = 1.0;
-		Simplex sim = new Simplex(numOfTestPoints, rangeMin, rangeMax);
 		
+		// TODO: Create a PropertiesParser class to load the method's properties from a properties file.
+		// The method's properties: 
+		// functionName, numOfTestPoints, rangeMin, rangeMax, delayTime, tolerance
+		String functionName = "Himmelblau";
+		int numOfTestPoints = 3;
+		double rangeMin = -5.0;
+		double rangeMax = 5.0;
 		int delayTime = 1;
 		double tolerance = 1.0;
+		
+		Simplex sim = new Simplex(numOfTestPoints, rangeMin, rangeMax);
+		
+		// iteration
 		int iterationIndex = 1;
 		double simplexStd = 0.0;
 		double minFval = 0.0;
-		boolean terminated = isTerminated(sim, tolerance);
-		
-		// iteration
+		boolean terminated = isTerminated(sim, tolerance, functionName);
 		while (!terminated) {
 			// the test points of the simplex according to the function values on them
-			order(sim);
+			order(sim, functionName);
 			
-			simplexStd = computeSimplexStd(sim);
-			minFval = Himmelblau(sim.getPoint(numOfTestPoints - 1));
+			simplexStd = computeSimplexStd(sim, functionName);
+			minFval = functionToOptimize(sim.getPoint(numOfTestPoints - 1), functionName);
 			System.out.printf("Iteration: %d", iterationIndex);
 			System.out.printf(", Simplex standard deviation: %.2f ", simplexStd);
 			System.out.printf(", Minimum value of function: %.2f ", minFval);
@@ -268,35 +282,35 @@ public class NMmethod {
 			Point reflectedPoint = reflection(centroid, sim.getPoint(numOfTestPoints - 1));
 			
 			// Check reflected point
-			double fBest = Himmelblau(sim.getPoint(0));
-			double fReflectedPoint = Himmelblau(reflectedPoint);
-			double fSecondWorst = Himmelblau(sim.getPoint(numOfTestPoints - 2));
+			double fBest = functionToOptimize(sim.getPoint(0), functionName);
+			double fReflectedPoint = functionToOptimize(reflectedPoint, functionName);
+			double fSecondWorst = functionToOptimize(sim.getPoint(numOfTestPoints - 2), functionName);
 			if ((fReflectedPoint >= fBest) && (fReflectedPoint < fSecondWorst)) {
 				sim.setPoint(numOfTestPoints - 1, reflectedPoint);
-				terminated = isTerminated(sim, tolerance);
+				terminated = isTerminated(sim, tolerance, functionName);
 			}
 			else if (fReflectedPoint < fBest) {
 				Point expandedPoint = expansion(centroid, reflectedPoint);
-				double fExpandedPoint = Himmelblau(expandedPoint);
+				double fExpandedPoint = functionToOptimize(expandedPoint, functionName);
 				if (fExpandedPoint < fReflectedPoint) {
 					sim.setPoint(numOfTestPoints - 1, expandedPoint);
-					terminated = isTerminated(sim, tolerance);
+					terminated = isTerminated(sim, tolerance, functionName);
 				}
 				else {
 					sim.setPoint(numOfTestPoints - 1, reflectedPoint);
-					terminated = isTerminated(sim, tolerance);
+					terminated = isTerminated(sim, tolerance, functionName);
 				}
 			}
 			else {
 				
-				double fWorstPoint = Himmelblau(sim.getPoint(numOfTestPoints - 1));
+				double fWorstPoint = functionToOptimize(sim.getPoint(numOfTestPoints - 1), functionName);
 				if (fReflectedPoint < fWorstPoint) {
 					Point contractedPoint = contraction(centroid, reflectedPoint);
-					double fContractedPoint = Himmelblau(contractedPoint);
+					double fContractedPoint = functionToOptimize(contractedPoint, functionName);
 					if (fContractedPoint < fReflectedPoint)
 					{
 						sim.setPoint(numOfTestPoints - 1, contractedPoint);
-						terminated = isTerminated(sim, tolerance);
+						terminated = isTerminated(sim, tolerance, functionName);
 					}
 					else {
 						shrink(sim,  sim.getPoint(numOfTestPoints - 1), numOfTestPoints - 1);
@@ -304,11 +318,11 @@ public class NMmethod {
 				}
 				else {
 					Point contractedPoint = contraction(centroid, sim.getPoint(numOfTestPoints - 1));
-					double fContractedPoint = Himmelblau(contractedPoint);
+					double fContractedPoint = functionToOptimize(contractedPoint, functionName);
 					if (fContractedPoint < fWorstPoint)
 					{
 						sim.setPoint(numOfTestPoints - 1, contractedPoint);
-						terminated = isTerminated(sim, tolerance);
+						terminated = isTerminated(sim, tolerance, functionName);
 					}
 					else {
 						shrink(sim,  sim.getPoint(numOfTestPoints - 1), numOfTestPoints - 1);
