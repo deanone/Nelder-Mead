@@ -1,4 +1,6 @@
-import java.util.TreeMap;
+import java.util.TreeMap;	// implementation of Map and SortedMap interfaces that maintains ascending order
+
+
 import java.util.concurrent.TimeUnit;
 import java.util.ArrayList;
 import java.util.Map;
@@ -20,13 +22,13 @@ public class NMmethod {
 		}
 	}
 
-	public static void Order(Simplex sim) {
+	public static void order(Simplex sim) {
 		Map<Double, Point> m = new TreeMap<Double, Point>();
-		int numOfPoints = sim.getNumOfPoints();
-		for (int i = 0; i < numOfPoints; i++) {
-			Point p = sim.getPoint(i);
-			Double fval = Himmelblau(p);
-			m.put(fval, p);
+		int numOfTestPoints = sim.getNumOfTestPoints();
+		for (int testPointIndex = 0; testPointIndex < numOfTestPoints; testPointIndex++) {
+			Point testPoint = sim.getPoint(testPointIndex);
+			Double testPointFuncValue = Himmelblau(testPoint);
+			m.put(testPoint, testPointFuncValue);
 		}
 		
 		int i = 0;
@@ -176,18 +178,20 @@ public class NMmethod {
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 		
-		int delayTime = 1;
-		double threshold = 10.0;
-		int n = 2;
-		int numOfPoints = n + 1;
+		// create a new simplex
+		int numOfTestPoints = 3;
 		double rangeMin = 1.0;
 		double rangeMax = 5.0;
-		Simplex sim = new Simplex(n, rangeMin, rangeMax);
+		Simplex sim = new Simplex(numOfTestPoints, rangeMin, rangeMax);
 		
+		int delayTime = 1;
+		double threshold = 10.0;
 		int iterationIndex = 1;
 		double simplexStd = 0.0;
 		double minFval = 0.0;
 		boolean terminated = isTerminated(sim, threshold);
+		
+		// iteration
 		while (!terminated) {
 			Order(sim);
 			
