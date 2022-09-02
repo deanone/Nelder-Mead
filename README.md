@@ -8,3 +8,7 @@ The implementation contains (for now):
 
 1. The core logic of the method
 2. A visualization module
+
+The current implementation works (for now) for the following functions:
+
+1. [Himmelblau's function](https://en.wikipedia.org/wiki/Himmelblau%27s_function)
