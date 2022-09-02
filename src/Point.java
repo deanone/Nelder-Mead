@@ -56,6 +56,15 @@ public class Point {
 	}
 	
 	/**
+	 * Setter of the dimension of the point.
+	 * 
+	 * @param dimension the dimension of the point
+	 */
+	public void setDimension(int dimension) {
+		this.dimension = dimension;
+	}
+	
+	/**
 	 * Getter of the dimension of the point.
 	 * 
 	 * @return the dimension of the point
