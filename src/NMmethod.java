@@ -23,11 +23,9 @@ public class NMmethod {
 	public static double functionToOptimize(Point point, String functionName) {
 		if (functionName.equals("Himmelblau")) {
 			return FunctionsForOptimization.Himmelblau(point);
-		}
-		else if (functionName.equals("Booth")) {
+		} else if (functionName.equals("Booth")) {
 			return FunctionsForOptimization.Booth(point);
-		}
-		else {
+		} else {
 			return 0.0;
 		}
 	}
@@ -227,7 +225,7 @@ public class NMmethod {
 	 * @param the function to be optimized
 	 * @return true if the evaluation criteria have been met, false otherwise
 	 */
-	public static boolean isTerminated(Simplex sim, double tolerance, String functionName){
+	public static boolean isTerminated(Simplex sim, double tolerance, String functionName) {
 		boolean terminated = false;
 		double simplexStd = computeSimplexStd(sim, functionName);
 		if (simplexStd < tolerance) {
@@ -288,21 +286,18 @@ public class NMmethod {
 			if ((fReflectedPoint >= fBest) && (fReflectedPoint < fSecondWorst)) {
 				sim.setPoint(numOfTestPoints - 1, reflectedPoint);
 				terminated = isTerminated(sim, tolerance, functionName);
-			}
-			else if (fReflectedPoint < fBest) {
+			} else if (fReflectedPoint < fBest) {
 				Point expandedPoint = expansion(centroid, reflectedPoint);
 				double fExpandedPoint = functionToOptimize(expandedPoint, functionName);
 				if (fExpandedPoint < fReflectedPoint) {
 					sim.setPoint(numOfTestPoints - 1, expandedPoint);
 					terminated = isTerminated(sim, tolerance, functionName);
-				}
-				else {
+				} else {
 					sim.setPoint(numOfTestPoints - 1, reflectedPoint);
 					terminated = isTerminated(sim, tolerance, functionName);
 				}
 			}
 			else {
-				
 				double fWorstPoint = functionToOptimize(sim.getPoint(numOfTestPoints - 1), functionName);
 				if (fReflectedPoint < fWorstPoint) {
 					Point contractedPoint = contraction(centroid, reflectedPoint);
@@ -311,20 +306,17 @@ public class NMmethod {
 					{
 						sim.setPoint(numOfTestPoints - 1, contractedPoint);
 						terminated = isTerminated(sim, tolerance, functionName);
-					}
-					else {
+					} else {
 						shrink(sim,  sim.getPoint(numOfTestPoints - 1), numOfTestPoints - 1);
 					}
-				}
-				else {
+				} else {
 					Point contractedPoint = contraction(centroid, sim.getPoint(numOfTestPoints - 1));
 					double fContractedPoint = functionToOptimize(contractedPoint, functionName);
 					if (fContractedPoint < fWorstPoint)
 					{
 						sim.setPoint(numOfTestPoints - 1, contractedPoint);
 						terminated = isTerminated(sim, tolerance, functionName);
-					}
-					else {
+					} else {
 						shrink(sim,  sim.getPoint(numOfTestPoints - 1), numOfTestPoints - 1);
 					}
 				}

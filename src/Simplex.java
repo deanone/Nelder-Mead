@@ -7,8 +7,7 @@ import java.util.ArrayList;
  *
  * Simplex class: The class representing the concept of a simplex.
  */
-public class Simplex
-{
+public class Simplex {
 	private int numOfTestPoints; 
 	private ArrayList<Point> testPoints;
 
